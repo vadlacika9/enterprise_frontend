@@ -1,13 +1,22 @@
 'use client'
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 type Room = {
   room_id: number;
   title: string;
   description: string;
   hourly_price: number;
-  imageUrl?: string;
+  city: string;
+  address_number: string;
+  postal_code: number;
+  capacity: number;
+  is_available: number;
+  room_number: string;
+  user_id: number;
+  images: { url: string }[];
+  equipments: [];
 };
 
 export default function RoomList() {
@@ -17,40 +26,80 @@ export default function RoomList() {
   useEffect(() => {
     async function fetchRooms() {
       try {
-        const res = await fetch("http://localhost:3000/rooms"); // itt legyen a saját API végpontod
+        const res = await fetch("http://localhost:3000/rooms");
         const data = await res.json();
         setRooms(data);
-        console.log(data)
       } catch (error) {
         console.error("Failed to fetch rooms:", error);
       } finally {
         setLoading(false);
       }
     }
-
     fetchRooms();
   }, []);
 
-  if (loading) return <p className="text-center py-8">Loading rooms...</p>;
+  if (loading) return <p className="text-center py-8 text-lg font-medium">Loading rooms...</p>;
 
   return (
-    <div className="container mx-auto px-6 md:px-12 py-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      {rooms.map((room) => (
-        <div key={room.room_id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
-          {room.imageUrl && (
-            <img
-              src={room.imageUrl}
-              alt={room.title}
-              className="w-full h-48 object-cover"
-            />
-          )}
-          <div className="p-4 flex flex-col gap-2">
-            <h3 className="text-xl font-semibold">{room.title}</h3>
-            <p className="text-gray-600 text-sm">{room.description}</p>
-            <p className="text-gray-900 font-bold mt-2">${room.hourly_price.toFixed(2)}</p>
+    <div className="container mx-auto px-6 md:px-12 py-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      {rooms.map((room) => {
+        const detailsUrl = `/rooms/${room.room_id}`;
+
+        return (
+          <div key={room.room_id} className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
+            
+            {/* KATTINTHATÓ KÉP */}
+            <Link href={detailsUrl} className="block overflow-hidden">
+              {room.images && room.images.length > 0 ? (
+                <img
+                  src={room.images[0].url}
+                  alt={room.title}
+                  className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              ) : (
+                <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">No image</div>
+              )}
+            </Link>
+            
+            <div className="p-5 flex flex-col grow gap-3">
+              <div>
+                <Link href={detailsUrl}>
+                  <h3 className="text-xl font-bold text-gray-800 hover:text-blue-600 transition">{room.title}</h3>
+                </Link>
+                <p className="text-gray-500 text-sm mt-1">{room.city}</p>
+              </div>
+
+              <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+                {room.description || "No description available for this room."}
+              </p>
+              
+              <div className="mt-auto">
+                 <p className="text-2xl font-black text-gray-900 mb-4">
+                  ${room.hourly_price.toFixed(2)} <span className="text-sm font-normal text-gray-500">/ hour</span>
+                </p>
+
+                <div className="flex gap-3">
+                  {/* DETAILS GOMB */}
+                  <Link 
+                    href={detailsUrl} 
+                    className="flex-1 text-center border border-gray-300 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition"
+                  >
+                    Details
+                  </Link>
+
+                  {/* BOOK NOW GOMB */}
+                  <Link 
+                    href={`${detailsUrl}/book`} 
+                    className="flex-1 text-center bg-black text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-800 transition shadow-md"
+                  >
+                    Book Now
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

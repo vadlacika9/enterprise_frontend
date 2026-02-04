@@ -2,14 +2,29 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { loginUser } from "../../services/LoginUser"; // Importáld a logikát
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(username, password);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = await loginUser({ email, password });
+      console.log("Sikeres belépés:", data);
+      // Itt tudod elmenteni a tokent (pl. cookie-ba) és átirányítani a felhasználót
+      // window.location.href = "/dashboard";
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -20,12 +35,20 @@ export default function LoginPage() {
       >
         <h1 className="text-2xl font-semibold text-center">Login</h1>
 
+        {error && (
+          <p className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
+            {error}
+          </p>
+        )}
+
         <input
           type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isLoading}
+          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50"
+          required
         />
 
         <input
@@ -33,22 +56,22 @@ export default function LoginPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          disabled={isLoading}
+          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50"
+          required
         />
 
         <button
           type="submit"
-          className="bg-black text-white rounded-lg py-2 hover:bg-gray-800 transition"
+          disabled={isLoading}
+          className="bg-black text-white rounded-lg py-2 hover:bg-gray-800 transition disabled:bg-gray-400"
         >
-          Sign In
+          {isLoading ? "Folyamatban..." : "Sign In"}
         </button>
 
         <p className="text-sm text-center text-gray-600">
           Don't have an account?{" "}
-          <Link
-            href="/register"
-            className="text-black font-medium hover:underline"
-          >
+          <Link href="/register" className="text-black font-medium hover:underline">
             Sign up here
           </Link>
         </p>

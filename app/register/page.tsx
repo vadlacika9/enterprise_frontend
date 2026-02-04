@@ -1,70 +1,119 @@
 'use client'
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Az átirányításhoz
+import { registerUser } from "../../services/RegisterUser";
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [passwordAgain, setPasswordAgain] = useState("");
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
-    password_again: "",
     phone_number: "",
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
   });
 
+  useEffect(() => {
+    console.log(formData)
+  },[formData])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Ha a password_again mezőt gépeljük, csak a saját state-jét frissítjük
+    if (e.target.name === "password_again") {
+      setPasswordAgain(e.target.value);
+      return;
+    }
+
+    // Minden mást a formData-ba mentünk
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
+    setError(null);
+
+    // Csak itt hasonlítjuk össze, nem küldjük el
+    if (formData.password !== passwordAgain) {
+      setError("A két jelszó nem egyezik meg!");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Most már csak a tiszta formData megy ki: password_again nélkül
+      await registerUser(formData);
+      router.push("/login?message=successful_registration");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-md w-96 flex flex-col gap-4"
+        className="bg-white p-8 rounded-2xl shadow-md w-full max-w-md flex flex-col gap-4"
       >
         <h1 className="text-2xl font-semibold text-center">Register</h1>
+
+        {error && (
+          <p className="text-red-500 text-sm text-center bg-red-50 p-2 rounded border border-red-200">
+            {error}
+          </p>
+        )}
 
         <input
           name="username"
           placeholder="Username"
+          required
           value={formData.username}
           onChange={handleChange}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          disabled={isLoading}
+          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-50"
         />
 
         <input
           name="email"
           type="email"
           placeholder="Email"
+          required
           value={formData.email}
           onChange={handleChange}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          disabled={isLoading}
+          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-50"
         />
 
         <div className="flex gap-2">
           <input
-            name="firstName"
+            name="first_name"
             placeholder="First Name"
-            value={formData.firstName}
+            required
+            value={formData.first_name}
             onChange={handleChange}
-            className="border rounded-lg px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            disabled={isLoading}
+            className="border rounded-lg px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-50"
           />
           <input
-            name="lastName"
+            name="last_name"
             placeholder="Last Name"
-            value={formData.lastName}
+            required
+            value={formData.last_name}
             onChange={handleChange}
-            className="border rounded-lg px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            disabled={isLoading}
+            className="border rounded-lg px-3 py-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-50"
           />
         </div>
 
@@ -73,40 +122,46 @@ export default function RegisterPage() {
           placeholder="Phone Number"
           value={formData.phone_number}
           onChange={handleChange}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          disabled={isLoading}
+          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-50"
         />
 
         <input
           name="password"
           type="password"
           placeholder="Password"
+          required
           value={formData.password}
           onChange={handleChange}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          disabled={isLoading}
+          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:bg-gray-50"
         />
 
-        <input
+       <input
           name="password_again"
           type="password"
           placeholder="Password again"
-          value={formData.password_again}
+          required
+          value={passwordAgain} // A különálló state-ből jön
           onChange={handleChange}
-          className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          disabled={isLoading}
+          className={`border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 ${
+            passwordAgain && formData.password !== passwordAgain ? 'border-red-500' : ''
+          }`}
         />
 
         <button
           type="submit"
-          className="bg-black text-white rounded-lg py-2 hover:bg-gray-800 transition"
+         
+          disabled={isLoading}
+          className="bg-black text-white rounded-lg py-2 hover:bg-gray-800 transition disabled:bg-gray-500 flex justify-center items-center"
         >
-          Sign Up
+          {isLoading ? "Processing..." : "Sign Up"}
         </button>
 
         <p className="text-sm text-center text-gray-600">
           Already have an account?{" "}
-          <Link
-            href="/login"
-            className="text-black font-medium hover:underline"
-          >
+          <Link href="/login" className="text-black font-medium hover:underline">
             Sign in
           </Link>
         </p>
