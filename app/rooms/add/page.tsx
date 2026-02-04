@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { fetchEquipments } from "../../../services/FetchEquipments"; // Importáld a szervizt
 import Cookies from 'js-cookie';
+import { useRouter } from "next/navigation";
 
 type Equipment = {
   equipment_id: number;
@@ -11,12 +12,14 @@ type Equipment = {
 };
 
 export default function AddRooms() {
+  const router = useRouter();
+
   const [step, setStep] = useState(1);
   const [dbEquipments, setDbEquipments] = useState<{equipment_id: number, name: string, category: string}[]>([]);
   const [isLoadingEquip, setIsLoadingEquip] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     title: "",
     city: "",
@@ -28,10 +31,9 @@ export default function AddRooms() {
     hourly_price: 0,
     description: "",
     selectedEquipments: [] as number[],
-    //images: [] as File[]
+    images: [] as File[]
   });
 
-  // ADATOK LEKÉRDEZÉSE A BACKENDNRŐL
   useEffect(() => {
     async function loadEquipments() {
       try {
@@ -49,10 +51,6 @@ export default function AddRooms() {
     }
     loadEquipments();
   }, []);
-
-  useEffect(() => {
-    console.log(formData)
-  }, [formData])
 
   const groupedEquipments = useMemo(() => {
     return dbEquipments.reduce((acc, curr) => {
@@ -83,56 +81,64 @@ export default function AddRooms() {
     }));
   };
 
- /* const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       setFormData({ ...formData, images: Array.from(e.target.files) });
     }
-  };*/
+  };
 
   const handleSubmit = async () => {
-  // Megakadályozzuk a többszöri beküldést
-  if (isSubmitting) return;
-  setIsSubmitting(true);
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
-  try {
+    try {
+      const token = Cookies.get('auth-token');
 
-    
+      if (formData.images.length === 0) {
+        alert("Please upload at least one image.");
+        return;
+      }
 
-   const token = Cookies.get('auth-token');
+      const formPayload = new FormData();
+      formPayload.append("title", formData.title);
+      formPayload.append("city", formData.city);
+      formPayload.append("postal_code", String(formData.postal_code ?? ""));
+      formPayload.append("street", formData.street);
+      formPayload.append("adress_number", formData.adress_number);
+      formPayload.append("room_number", String(formData.room_number ?? ""));
+      formPayload.append("capacity", String(formData.capacity));
+      formPayload.append("hourly_price", String(formData.hourly_price));
+      formPayload.append("description", formData.description);
+      formPayload.append("selectedEquipments", JSON.stringify(formData.selectedEquipments));
+      formData.images.forEach((file) => formPayload.append("images", file));
 
+      const response = await fetch("http://localhost:3000/rooms/add", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formPayload
+      });
 
-    
+      const result = await response.json();
 
-    const response = await fetch("http://localhost:3000/rooms/add", {
-      method: "POST",
-      headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  },
-      body:JSON.stringify(formData)
-    });
-
-    const result = await response.json();
-
-    if (response.ok) {
-      alert("Room successfully listed!");
-      // Átirányítás a szobák listájához
-      
-    } else {
-      alert(`Error: ${result.message || "Failed to add room"}`);
+      if (response.ok) {
+        alert("Room successfully listed!");
+        router.push('/rooms');
+      } else {
+        alert(`Error: ${result.message || result.error || "Failed to add room"}`);
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      alert("Network error. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
     }
-  } catch (error) {
-    console.error("Network error:", error);
-    alert("Network error. Please try again later.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-        
         {/* Progress Bar */}
         <div className="flex justify-between mb-8">
           {[1, 2, 3].map((num) => (
@@ -232,14 +238,14 @@ export default function AddRooms() {
   <div className="flex flex-col gap-4 animate-in fade-in duration-500">
     <h2 className="text-2xl font-bold mb-2">Photos</h2>
     <p className="text-gray-500 mb-4">Upload at least one high-quality photo of the room.</p>
-    
+
     {/* Feltöltő zóna */}
     <div className="border-2 border-dashed border-gray-300 rounded-2xl p-10 text-center hover:border-black transition-colors relative bg-gray-50 group">
       <input 
         type="file" 
         multiple 
         accept="image/*" 
-        //onChange={handleImageChange} 
+        onChange={handleImageChange} 
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
       />
       <div className="flex flex-col items-center gap-2">
@@ -255,31 +261,11 @@ export default function AddRooms() {
       </div>
     </div>
 
-    {/* Előnézeti rács (Previews) */}
-    {/*formData.images.length > 0 && (
-      <div className="grid grid-cols-3 gap-3 mt-4">
-        {formData.images.map((file, index) => (
-          <div key={index} className="relative aspect-square group">
-            <img 
-              src={URL.createObjectURL(file)} 
-              alt="preview" 
-              className="w-full h-full object-cover rounded-xl border border-gray-200 shadow-sm"
-            />
-            <button
-              onClick={() => {
-                const newImages = formData.images.filter((_, i) => i !== index);
-                setFormData({ ...formData, images: newImages });
-              }}
-              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-      </div>
+    {formData.images.length > 0 && (
+      <p className="text-sm text-gray-600">
+        {formData.images.length} file(s) selected
+      </p>
     )}
-
-    {/* Navigációs gombok */}
     <div className="flex gap-4 mt-8">
       <button 
         onClick={prevStep} 
@@ -289,7 +275,7 @@ export default function AddRooms() {
       </button>
       <button 
         onClick={handleSubmit} 
-        //disabled={formData.images.length === 0}
+        disabled={formData.images.length === 0}
         className="flex-1 bg-green-600 text-white p-4 rounded-xl font-bold hover:bg-green-700 transition shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
         Finish & Post Room

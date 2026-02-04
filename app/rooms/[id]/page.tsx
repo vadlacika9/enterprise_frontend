@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation"; // Az ID kinyeréséhez
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 
 type Room = {
@@ -22,35 +23,45 @@ type Equipment = {
   equipment_id: number;
   name: string;
   value?: string | number;
-  equipment: any;
+};
+
+type Image = {
+  image_id: number;
+  url: string;
 };
 
 export default function RoomPage() {
-  const params = useParams(); // Kinyerjük az URL-ből az id-t
+  const params = useParams();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [equipments, setEquipments] = useState<Equipment[]>([]);
+  const [images, setImages] = useState<Image[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
   async function fetchData() {
     try {
       setLoading(true);
 
-      const [roomRes, equipmentRes] = await Promise.all([
-        fetch(`http://localhost:3000/rooms/${params.id}`),
-        fetch(`http://localhost:3000/equipment/rooms/${params.id}`)
+      const [roomRes, imagesRes] = await Promise.all([
+        fetch(`http://localhost:3000/rooms/${params.id}/details`),
+        fetch(`http://localhost:3000/rooms/${params.id}/images`),
       ]);
 
       if (!roomRes.ok) throw new Error("Room not found");
-
       const roomData = await roomRes.json();
       setRoom(roomData);
 
-      if (equipmentRes.ok) {
-        const equipmentData = await equipmentRes.json();
-        setEquipments(equipmentData);
+     console.log(roomData);
+     setEquipments(roomData.equipments || []);
+
+      if (imagesRes.ok) {
+        const imagesData = await imagesRes.json();
+        setImages(imagesData);
+        setCurrentImageIndex(0);
       }
+
 
     } catch (err: any) {
       setError(err.message);
@@ -66,22 +77,53 @@ export default function RoomPage() {
   if (error || !room) return <div className="text-center py-20 text-red-500">{error || "Room not found"}</div>;
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen bg-gray-50 py-12 px-6">
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden">
-        
-        {/* KÉPGALÉRIA */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-2">
-          {room.images && room.images.length > 0 ? (
-            room.images.map((img, index) => (
-              <img 
-                key={index} 
-                src={img.url} 
-                alt={`${room.title} - ${index}`} 
-                className={`w-full h-80 object-cover ${index === 0 ? 'md:col-span-2' : ''} rounded-xl`}
+
+        <div className="p-2">
+          {images && images.length > 0 ? (
+            <div className="relative">
+              <img
+                key={images[currentImageIndex].image_id}
+                src={images[currentImageIndex].url}
+                alt={`${room.title} - ${currentImageIndex + 1}`}
+                className="w-full h-96 object-cover rounded-xl"
               />
-            ))
+
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentImageIndex((prev) =>
+                    prev === 0 ? images.length - 1 : prev - 1
+                  )
+                }
+                className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 rounded-full w-10 h-10 flex items-center justify-center shadow"
+                aria-label="Previous image"
+              >
+                &larr;
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentImageIndex((prev) =>
+                    prev === images.length - 1 ? 0 : prev + 1
+                  )
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-900 rounded-full w-10 h-10 flex items-center justify-center shadow"
+                aria-label="Next image"
+              >
+                &rarr;
+              </button>
+
+              <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2 py-1 rounded-full">
+                {currentImageIndex + 1} / {images.length}
+              </div>
+            </div>
           ) : (
-            <div className="h-80 bg-gray-200 flex items-center justify-center md:col-span-2 rounded-xl">No images available</div>
+            <div className="h-80 bg-gray-200 flex items-center justify-center rounded-xl">No images available</div>
           )}
         </div>
 
@@ -113,7 +155,7 @@ export default function RoomPage() {
           key={eq.equipment_id}
           className="bg-gray-100 rounded-lg px-4 py-2 text-sm font-medium text-gray-900"
         >
-          {eq.equipment.name}
+          {eq.name}
         </li>
       ))}
     </ul>
@@ -148,5 +190,7 @@ export default function RoomPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
+

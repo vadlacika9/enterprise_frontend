@@ -3,23 +3,26 @@
 import { useState } from "react";
 import Link from "next/link";
 import { loginUser } from "../../services/LoginUser"; // Importáld a logikát
+import { useRouter } from "next/navigation";
+
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      const data = await loginUser({ email, password });
-      console.log("Sikeres belépés:", data);
-      // Itt tudod elmenteni a tokent (pl. cookie-ba) és átirányítani a felhasználót
-      // window.location.href = "/dashboard";
+      await loginUser({ email, password });
+      router.push('/')
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -70,7 +73,7 @@ export default function LoginPage() {
         </button>
 
         <p className="text-sm text-center text-gray-600">
-          Don't have an account?{" "}
+          Don&apost have an account?{" "}
           <Link href="/register" className="text-black font-medium hover:underline">
             Sign up here
           </Link>
