@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation"; // Az ID kinyeréséhez
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 
 type Room = {
@@ -25,12 +26,16 @@ type Equipment = {
   equipment: any;
 };
 
+
+
 export default function RoomPage() {
   const params = useParams(); // Kinyerjük az URL-ből az id-t
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [equipments, setEquipments] = useState<Equipment[]>([]);
+  const router = useRouter();
+
 
   useEffect(() => {
   async function fetchData() {
@@ -61,6 +66,22 @@ export default function RoomPage() {
 
   if (params.id) fetchData();
 }, [params.id]);
+
+const handleReserve = () => {
+    if (!room) return;
+
+    // Eltároljuk az adatokat a böngésző ideiglenes memóriájában
+    const paymentData = {
+      roomId: room.room_id,
+      title: room.title,
+      amount: room.hourly_price, // Itt az összeg
+    };
+
+    sessionStorage.setItem("pendingPayment", JSON.stringify(paymentData));
+
+    // Átirányítás paraméterek nélkül
+    router.push("/payment");
+  };
 
   if (loading) return <div className="text-center py-20">Loading room details...</div>;
   if (error || !room) return <div className="text-center py-20 text-red-500">{error || "Room not found"}</div>;
@@ -129,7 +150,9 @@ export default function RoomPage() {
                 ${room.hourly_price.toFixed(2)} <span className="text-sm font-normal text-gray-500">/ hour</span>
               </p>
               
-              <button className="w-full bg-black text-white mt-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg">
+              <button 
+              onClick={handleReserve}
+              className="w-full bg-black text-white mt-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition shadow-lg">
                 Reserve Now
               </button>
               
