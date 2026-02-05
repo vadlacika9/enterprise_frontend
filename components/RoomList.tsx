@@ -48,7 +48,6 @@ export default function RoomList() {
         return (
           <div key={room.room_id} className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
             
-            {/* KATTINTHATÓ KÉP */}
             <Link href={detailsUrl} className="block overflow-hidden">
               {room.images && room.images.length > 0 ? (
                 <img
@@ -59,13 +58,11 @@ export default function RoomList() {
               ) : (
                 <div className="w-full h-56 bg-gray-200 flex items-center justify-center text-gray-400">No image</div>
               )}
-            </Link>
+            
             
             <div className="p-5 flex flex-col grow gap-3">
               <div>
-                <Link href={detailsUrl}>
                   <h3 className="text-xl font-bold text-gray-800 hover:text-blue-600 transition">{room.title}</h3>
-                </Link>
                 <p className="text-gray-500 text-sm mt-1">{room.city}</p>
               </div>
 
@@ -75,28 +72,12 @@ export default function RoomList() {
               
               <div className="mt-auto">
                  <p className="text-2xl font-black text-gray-900 mb-4">
-                  ${room.hourly_price.toFixed(2)} <span className="text-sm font-normal text-gray-500">/ hour</span>
+                  {room.hourly_price.toFixed(2)} <span className="text-sm font-normal text-gray-500">RON / hour</span>
                 </p>
 
-                <div className="flex gap-3">
-                  {/* DETAILS GOMB */}
-                  <Link 
-                    href={detailsUrl} 
-                    className="flex-1 text-center border border-gray-300 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-50 transition"
-                  >
-                    Details
-                  </Link>
-
-                  {/* BOOK NOW GOMB */}
-                  <Link 
-                    href={`${detailsUrl}/book`} 
-                    className="flex-1 text-center bg-black text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-800 transition shadow-md"
-                  >
-                    Book Now
-                  </Link>
-                </div>
               </div>
             </div>
+            </Link>
           </div>
         );
       })}

@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 const features=[
-   "Photography Workshop",
-    "Guided Hike",
-    "Painting Class",
-    "Cooking Lessons",
-    "Yoga Session",
-    "Team Building Games",
+   "Instant Booking",
+    "Real-Time Availability",
+    "Seamless Experience",
+    "Smart Filters",
+    "Transparent Pricing",
+    "Transparent Pricing",
   ];
 
 export default function FeatureList() {

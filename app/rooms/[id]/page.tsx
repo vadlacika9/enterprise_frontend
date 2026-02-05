@@ -187,8 +187,8 @@ export default function RoomPage() {
               {/* --- JOBB OLDAL: ÁR ÉS FOGLALÁS --- */}
               <div className="w-full md:w-80 bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-24">
                 <div className="flex items-end gap-1 mb-6">
-                    <span className="text-4xl font-black text-gray-900">${displayPrice}</span>
-                    <span className="text-gray-500 font-medium mb-1">/ hour</span>
+                    <span className="text-4xl font-black text-gray-900">{displayPrice}</span>
+                    <span className="text-gray-500 font-medium mb-1">RON / hour</span>
                 </div>
                 
                 <button 

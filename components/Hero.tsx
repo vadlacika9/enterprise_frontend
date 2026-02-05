@@ -9,10 +9,10 @@ export default function HeroSection() {
         {/* Left side – Text */}
         <div className="flex-1 flex flex-col gap-4">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-            Discover & Book Your Perfect Product
+            Discover & Book Your Perfect Space
           </h1>
           <p className="text-gray-700 text-lg md:text-xl">
-            Easily explore our selection and reserve your favorite items in just a few clicks.
+            Easily explore our selection and reserve your favorite spaces in just a few clicks.
           </p>
           <div className="mt-4">
             <Link

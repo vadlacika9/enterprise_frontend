@@ -122,7 +122,7 @@ const cardStyle: StripeCardElementOptions = {
         disabled={processing || succeeded || !stripe}
         className="w-full bg-black text-white p-4 rounded-xl font-bold hover:bg-gray-800 disabled:bg-gray-400 transition-all duration-200"
       >
-        {processing ? "Feldolgozás..." : succeeded ? "✓ Sikeres fizetés!" : "Fizetés indítása"}
+        {processing ? "Processing..." : succeeded ? "✓ Succesfull payment!" : "Pay"}
       </button>
     </form>
   );
