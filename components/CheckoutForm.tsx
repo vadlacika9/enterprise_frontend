@@ -1,9 +1,9 @@
 'use client'
 
 import { StripeCardElementOptions } from '@stripe/stripe-js';
+import { useRouter } from 'next/navigation';
 import Cookies from "js-cookie";
 // components/CheckoutForm.tsx
-
 
 import React, { useState, FormEvent } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -16,6 +16,7 @@ interface CheckoutFormProps {
 
 // 2. A függvény fejlécében destrukturáljuk az amount-ot és megadjuk a típust
 export default function CheckoutForm({ amount, roomId }: CheckoutFormProps) {
+  const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
   
@@ -86,6 +87,7 @@ export default function CheckoutForm({ amount, roomId }: CheckoutFormProps) {
       }
       
       setProcessing(false);
+      router.push("/rooms");
     }
   } catch (err: any) {
     setError("Hiba történt a szerverrel való kommunikáció során.");
