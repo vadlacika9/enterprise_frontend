@@ -163,13 +163,13 @@ export default function AddRooms() {
             
             <div>
               <label className={labelClasses}>Room Title</label>
-              <input name="title" placeholder="e.g. Konferencia terem" onChange={handleChange} className={inputClasses} />
+              <input name="title" placeholder="e.g. Conference room" onChange={handleChange} className={inputClasses} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelClasses}>City</label>
-                <input name="city" placeholder="Kolozsvár" onChange={handleChange} className={inputClasses} />
+                <input name="city" placeholder="Cluj Napoca" onChange={handleChange} className={inputClasses} />
               </div>
               <div>
                 <label className={labelClasses}>Postal Code</label>
@@ -179,7 +179,7 @@ export default function AddRooms() {
 
             <div>
               <label className={labelClasses}>Street</label>
-              <input name="street" placeholder="Kossuth Lajos utca" onChange={handleChange} className={inputClasses} />
+              <input name="street" placeholder="Kossuth Lajos street" onChange={handleChange} className={inputClasses} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -189,7 +189,7 @@ export default function AddRooms() {
               </div>
               <div>
                 <label className={labelClasses}>Room / Door</label>
-                <input name="room_number" placeholder="4-es ajtó" onChange={handleChange} className={inputClasses} />
+                <input name="room_number" placeholder="4" onChange={handleChange} className={inputClasses} />
               </div>
             </div>
 
@@ -199,14 +199,14 @@ export default function AddRooms() {
                 <input name="capacity" type="number" min="1" onChange={handleChange} className={inputClasses} />
               </div>
               <div>
-                <label className={labelClasses}>Hourly Price ($)</label>
+                <label className={labelClasses}>Hourly Price (RON)</label>
                 <input name="hourly_price" type="number" min="0" onChange={handleChange} className={inputClasses} />
               </div>
             </div>
 
             <div>
               <label className={labelClasses}>Description</label>
-              <textarea name="description" placeholder="Írj egy érdekes lírást..." onChange={handleChange} className={`${inputClasses} h-32 resize-none`} />
+              <textarea name="description" placeholder="Write a catchy description..." onChange={handleChange} className={`${inputClasses} h-32 resize-none`} />
             </div>
 
             <button onClick={nextStep} className="bg-black text-white p-4 rounded-xl mt-4 font-bold hover:bg-gray-800 transition shadow-md">
