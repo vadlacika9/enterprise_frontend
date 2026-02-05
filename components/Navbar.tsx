@@ -3,21 +3,41 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode"; // <--- 1. IMPORT
 
 export default function Navbar() {
+  // Nem csak azt figyeljük, hogy be van-e lépve, hanem hogy ki ő
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // Ellenőrizzük, van-e token. 
-    // Ha van, bejelentkezettnek tekintjük a felhasználót.
     const token = Cookies.get("auth-token");
-    setIsLoggedIn(!!token);
+
+    if (token) {
+      setIsLoggedIn(true);
+      try {
+        // 2. TOKEN KIBONTÁSA
+        const decoded: any = jwtDecode(token);
+        // A backendben 'role' a kulcs neve
+        setUserRole(decoded.role || null); 
+      } catch (error) {
+        console.error("Hibás token:", error);
+        // Ha hibás a token, inkább léptessük ki a biztonság kedvéért
+        Cookies.remove("auth-token");
+        setIsLoggedIn(false);
+        setUserRole(null);
+      }
+    } else {
+        setIsLoggedIn(false);
+        setUserRole(null);
+    }
   }, []);
 
   const handleLogout = () => {
     Cookies.remove("auth-token");
     setIsLoggedIn(false);
-    window.location.href = "/"; // Visszavisz a főoldalra
+    setUserRole(null);
+    window.location.href = "/"; 
   };
 
   return (
@@ -33,8 +53,8 @@ export default function Navbar() {
           Rooms
         </Link>
         
-        {/* HA BE VAN LÉPVE - Megjelenik az "Add Room" opció */}
-        {isLoggedIn && (
+        {/* 3. SZIGORÚ ELLENŐRZÉS: Csak ADMIN vagy OWNER láthatja */}
+        {(userRole === 'ADMIN' || userRole === 'OWNER') && (
           <Link href="/rooms/add" className="text-blue-600 hover:text-blue-800 font-medium">
             List Your Room
           </Link>
